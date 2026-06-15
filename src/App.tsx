@@ -1,5 +1,32 @@
 import { useEffect, useRef, useState } from 'react';
 
+/**
+ * Schaalt een vaste-grootte ontwerp (Figma-canvas) zodat het altijd in de
+ * viewport past. Geeft een zoomfactor (max 1, nooit groter dan 1:1) terug die
+ * je als `zoom` op het canvas zet. Lost op dat het ontwerp op 100% rechts
+ * uitliep terwijl het op 75% wel paste.
+ *
+ * Geef je een `designHeight` mee, dan past het ook op viewporthoogte (handig
+ * voor modals die helemaal zichtbaar moeten blijven). Laat je hem weg, dan
+ * wordt alleen op breedte geschaald (handig voor een scrollbaar dashboard).
+ */
+function useFitZoom(designWidth: number, designHeight?: number, padding = 48) {
+  const [zoom, setZoom] = useState(1);
+  useEffect(() => {
+    const calc = () => {
+      let z = (window.innerWidth - padding) / designWidth;
+      if (designHeight) {
+        z = Math.min(z, (window.innerHeight - padding) / designHeight);
+      }
+      setZoom(Math.min(1, z));
+    };
+    calc();
+    window.addEventListener('resize', calc);
+    return () => window.removeEventListener('resize', calc);
+  }, [designWidth, designHeight, padding]);
+  return zoom;
+}
+
 const themes = [
   'biodiversiteit',
   'gezondheid',
@@ -365,7 +392,7 @@ function BarChart({ blueScore, orangeScore, blueLabel, orangeLabel }: {
         return (
           <g key={v}>
             <line x1={pad.left} y1={y} x2={W - pad.right} y2={y} stroke="#e8eef6" strokeWidth="1" />
-            <text x={pad.left - 6} y={y + 3} textAnchor="end" fontSize="9" fill="#aaa" fontFamily="sans-serif">{v}</text>
+            <text x={pad.left - 6} y={y + 3} textAnchor="end" fontSize="11" fill="#6f7785" fontFamily="sans-serif">{v}</text>
           </g>
         );
       })}
@@ -415,7 +442,7 @@ function RadarChart({ blueScores, orangeScores, compact }: { blueScores: number[
       })}
       {[20, 40, 60, 80, 100].map(pct => {
         const [x, y] = pt(0, R * pct / 100);
-        return <text key={pct} x={x + 5} y={y + 4} fontSize="8.5" fill="#3d3d3a" opacity="0.4">{pct}</text>;
+        return <text key={pct} x={x + 5} y={y + 4} fontSize="10" fill="#3d3d3a" opacity="0.6">{pct}</text>;
       })}
       <path d={dataPath(blueScores)} fill="rgba(26,62,115,0.15)" stroke="rgb(26,62,115)" strokeWidth="1.5" strokeLinejoin="round" />
       <path d={dataPath(orangeScores)} fill="rgba(237,108,37,0.12)" stroke="rgb(237,108,37)" strokeWidth="1.5" strokeLinejoin="round" />
@@ -438,7 +465,7 @@ function RadarChart({ blueScores, orangeScores, compact }: { blueScores: number[
         return (
           <g key={i}>
             <text x={lx} y={ly} fontSize="12" fill="#141413" textAnchor={anchor}>{factor.name}</text>
-            <text x={lx} y={ly + 15} fontSize="10" fill="#1a3e73" textAnchor={anchor}>
+            <text x={lx} y={ly + 15} fontSize="11" fill="#1a3e73" textAnchor={anchor}>
               {blueScores[i]}{' '}
               <tspan fill="#777">/</tspan>
               {' '}
@@ -531,13 +558,16 @@ type AddDishModalProps = {
 };
 
 function AddDishModal({ open, onClose, onOpenChat, scenario, addMeal, removeMeal, onSelectDish }: AddDishModalProps) {
+  // Alleen op breedte schalen zodat de tekst leesbaar groot blijft; is de modal
+  // hoger dan het scherm, dan scrollt de overlay (zie .add-dish-overlay).
+  const canvasZoom = useFitZoom(1293);
   if (!open) return null;
 
   const inScenario = (name: string) => scenario.some(s => s.name === name);
 
   return (
     <div className="add-dish-overlay">
-      <div className="add-dish-canvas-wrap">
+      <div className="add-dish-canvas-wrap" style={{ zoom: canvasZoom }}>
         <button className="add-dish-back" type="button" onClick={onClose}>
           <span className="add-dish-back__arrow">
             <img src={addDishAssets.backArrow} alt="" />
@@ -644,20 +674,22 @@ function AddDishModal({ open, onClose, onOpenChat, scenario, addMeal, removeMeal
                 <span className="add-dish-sidebar-badge">{scenario.length}</span>
               </div>
 
-              {scenario.length === 0 && (
-                <p className="add-dish-sidebar-empty">Nog geen gerechten toegevoegd.</p>
-              )}
+              <div className="add-dish-sidebar-scroll">
+                {scenario.length === 0 && (
+                  <p className="add-dish-sidebar-empty">Nog geen gerechten toegevoegd.</p>
+                )}
 
-              {scenario.map((item) => (
-                <div key={item.name} className="add-dish-sidebar-item">
-                  <img src={item.image} alt="" className="add-dish-sidebar-item__img" />
-                  <div className="add-dish-sidebar-item__info">
-                    <p className="add-dish-sidebar-item__name">{item.name}</p>
-                    <p className="add-dish-sidebar-item__desc">{item.desc}</p>
+                {scenario.map((item) => (
+                  <div key={item.name} className="add-dish-sidebar-item">
+                    <img src={item.image} alt="" className="add-dish-sidebar-item__img" />
+                    <div className="add-dish-sidebar-item__info">
+                      <p className="add-dish-sidebar-item__name">{item.name}</p>
+                      <p className="add-dish-sidebar-item__desc">{item.desc}</p>
+                    </div>
+                    <button type="button" className="add-dish-sidebar-item__remove" aria-label="Verwijderen" onClick={() => removeMeal(item.name)}>×</button>
                   </div>
-                  <button type="button" className="add-dish-sidebar-item__remove" aria-label="Verwijderen" onClick={() => removeMeal(item.name)}>×</button>
-                </div>
-              ))}
+                ))}
+              </div>
 
               {scenario.length > 0 && (
                 <>
@@ -974,6 +1006,8 @@ function DashboardScreen() {
   const selectedMeal = dashboardMeals[selectedIndex];
   const comparedMeal = dashboardMeals[compareIndex];
 
+  const canvasZoom = useFitZoom(1440);
+
   return (
     <main className="dashboard-shell">
       <div className="background-orbit background-orbit-left" aria-hidden="true" />
@@ -981,7 +1015,7 @@ function DashboardScreen() {
       <div className="background-arc background-arc-top" aria-hidden="true" />
       <div className="background-arc background-arc-bottom" aria-hidden="true" />
 
-      <div className="dashboard-canvas">
+      <div className="dashboard-canvas" style={{ zoom: canvasZoom }}>
       <header className="dashboard-header">
         <div className="dashboard-actions" aria-label="Dashboard acties">
           <div className="week-chip-wrapper" ref={filterDropdownRef}>
@@ -1153,6 +1187,8 @@ function DashboardScreen() {
         </button>
       )}
 
+      </div>
+
       <AddDishModal
         open={addDishOpen}
         onClose={() => setAddDishOpen(false)}
@@ -1162,7 +1198,6 @@ function DashboardScreen() {
         removeMeal={removeMeal}
         onSelectDish={setDetailDish}
       />
-      </div>
 
       <DetailModal
         open={!!detailDish}
