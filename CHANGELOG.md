@@ -1,5 +1,15 @@
 # Patch notes
 
+## v1.2 — 16 juni 2026
+
+### Chatbot
+- De chatbot is nu een **werkende AI-assistent** in plaats van een statisch ontwerp.
+- Praat met Claude (model Claude Haiku 4.5) via de officiële Anthropic-SDK, rechtstreeks vanuit de browser.
+- Echte chat-ervaring: berichtgeschiedenis, eigen bubbels en bot-bubbels, een "aan het typen…"-animatie en een nette foutmelding als er iets misgaat.
+- De suggestieknoppen sturen nu echt een vraag in; de assistent kent het geselecteerde gerecht.
+- Nederlandstalige, beknopte antwoorden met praktische tips, afgestemd op de Dish Score-context.
+- De API-key wordt uit een lokaal `.env.local`-bestand gelezen en staat in `.gitignore` (wordt niet meegecommit).
+
 ## v1.1 — 15 juni 2026
 
 ### Responsiviteit & schaling

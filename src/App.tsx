@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { askChatbot, chatbotReady, type ChatMessage } from './chatbot';
 
 /**
  * Schaalt een vaste-grootte ontwerp (Figma-canvas) zodat het altijd in de
@@ -479,6 +480,42 @@ function RadarChart({ blueScores, orangeScores, compact }: { blueScores: number[
 }
 
 function ChatbotPanel({ open, onClose, selectedMeal }: { open: boolean; onClose: () => void; selectedMeal: string }) {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll naar het laatste bericht.
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+  }, [messages, loading]);
+
+  async function send(text: string) {
+    const content = text.trim();
+    if (!content || loading) return;
+    if (!chatbotReady) {
+      setError('Geen API-key ingesteld. Voeg VITE_ANTHROPIC_API_KEY toe in .env.local.');
+      return;
+    }
+    setInput('');
+    setError(null);
+    const next: ChatMessage[] = [...messages, { role: 'user', text: content }];
+    setMessages(next);
+    setLoading(true);
+    try {
+      const reply = await askChatbot(next, selectedMeal);
+      setMessages((m) => [...m, { role: 'assistant', text: reply }]);
+    } catch {
+      setError('Er ging iets mis bij het ophalen van een antwoord. Probeer het opnieuw.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const hasConversation = messages.length > 0;
+
   return (
     <>
       <div
@@ -511,28 +548,64 @@ function ChatbotPanel({ open, onClose, selectedMeal }: { open: boolean; onClose:
 
         <div className="chatbot-panel__context">{selectedMeal} · Week 22</div>
 
-        <div className="chatbot-panel__intro">
-          <div className="chatbot-panel__intro-avatar">
-            <img src={chatbotAssets.robot} alt="Dish Score assistent" />
-          </div>
-        </div>
+        <div className="chatbot-panel__messages" ref={scrollRef}>
+          {!hasConversation && (
+            <>
+              <div className="chatbot-panel__intro">
+                <div className="chatbot-panel__intro-avatar">
+                  <img src={chatbotAssets.robot} alt="Dish Score assistent" />
+                </div>
+              </div>
 
-        <div className="chatbot-panel__suggestions">
-          {chatSuggestions.map((q) => (
-            <button key={q} className="chatbot-suggestion" type="button">{q}</button>
+              <div className="chatbot-panel__suggestions">
+                {chatSuggestions.map((q) => (
+                  <button
+                    key={q}
+                    className="chatbot-suggestion"
+                    type="button"
+                    onClick={() => send(q)}
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+
+          {messages.map((m, i) => (
+            <div key={i} className={`chatbot-bubble chatbot-bubble--${m.role}`}>
+              {m.text}
+            </div>
           ))}
+
+          {loading && (
+            <div className="chatbot-bubble chatbot-bubble--assistant chatbot-bubble--typing">
+              <span /><span /><span />
+            </div>
+          )}
+
+          {error && <div className="chatbot-panel__error">{error}</div>}
         </div>
 
-        <div className="chatbot-panel__input-row">
+        <form
+          className="chatbot-panel__input-row"
+          onSubmit={(e) => {
+            e.preventDefault();
+            send(input);
+          }}
+        >
           <input
             type="text"
             className="chatbot-panel__input"
             placeholder="Typ je bericht...."
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            disabled={loading}
           />
-          <button type="button" className="chatbot-panel__send" aria-label="Versturen">
+          <button type="submit" className="chatbot-panel__send" aria-label="Versturen" disabled={loading}>
             <img src={chatbotAssets.send} alt="" />
           </button>
-        </div>
+        </form>
       </aside>
     </>
   );
