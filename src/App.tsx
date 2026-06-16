@@ -33,7 +33,7 @@ const themes = [
   'gezondheid',
   'betaalbaarheid',
   'inclusiviteit',
-  'emissies',
+  'verbruik/uitstoot',
   'eerlijke keten'
 ];
 
@@ -44,7 +44,7 @@ const loadingAssets = {
   laag3: './assets/loading-layer3.svg'
 };
 
-// Scores per factor in volgorde: CO₂-uitstoot, Biodiversiteit, Betaalbaarheid, Inclusiviteit, Evenwichtige keten, Slimmer & schoner
+// Scores per factor in volgorde: Verbruik/uitstoot, Biodiversiteit, Betaalbaarheid, Inclusiviteit, Eerlijke keten, Gezondheid
 const dashboardMeals = [
   {
     name: 'Seizoenssalade',
@@ -79,12 +79,12 @@ const dashboardMeals = [
 ];
 
 const factors = [
-  { name: 'CO₂-uitstoot',       color: '#002caf' },
+  { name: 'Verbruik/uitstoot',   color: '#002caf' },
   { name: 'Biodiversiteit',      color: '#1770dd' },
   { name: 'Betaalbaarheid',      color: '#ffa526' },
   { name: 'Inclusiviteit',       color: '#af66f1' },
-  { name: 'Evenwichtige keten',  color: '#f7328c' },
-  { name: 'Slimmer & schoner',   color: '#1a3e73' },
+  { name: 'Eerlijke keten',      color: '#f7328c' },
+  { name: 'Gezondheid',          color: '#1a3e73' },
 ];
 
 const dashboardCards = [
@@ -366,7 +366,7 @@ const filterScoreIndex: Record<string, number> = {
   'biodiversiteit': 1,
   'betaalbaarheid': 2,
   'inclusiviteit':  3,
-  'emissies':       0,
+  'verbruik/uitstoot': 0,
   'eerlijke keten': 4,
 };
 
@@ -555,6 +555,10 @@ function ChatbotPanel({ open, onClose, selectedMeal }: { open: boolean; onClose:
                 <div className="chatbot-panel__intro-avatar">
                   <img src={chatbotAssets.robot} alt="Dish Score assistent" />
                 </div>
+                <p className="chatbot-panel__intro-text">
+                  Hoi! Ik ben je Dish Score assistent. Stel me een vraag over de
+                  scores en thema&apos;s, of kies hieronder een suggestie.
+                </p>
               </div>
 
               <div className="chatbot-panel__suggestions">
@@ -670,7 +674,7 @@ function AddDishModal({ open, onClose, onOpenChat, scenario, addMeal, removeMeal
             <h3 className="add-dish-filters-title">Filters</h3>
             <div className="add-dish-filter-chips">
               <button type="button" className="add-dish-chip add-dish-chip--active">Past bij mijn profiel</button>
-              {['Gezondheid', 'Betaalbaarheid', 'Inclusiviteit', 'Diversiteit', 'Emissies', 'Eerlijke keten'].map((f) => (
+              {['Gezondheid', 'Betaalbaarheid', 'Inclusiviteit', 'Biodiversiteit', 'Verbruik/uitstoot', 'Eerlijke keten'].map((f) => (
                 <button key={f} type="button" className="add-dish-chip">
                   <img src={addDishAssets.filterIcon} alt="" />
                   {f}
@@ -1108,7 +1112,7 @@ function DashboardScreen() {
             </button>
             {filterDropdownOpen && (
               <div className="week-dropdown" role="listbox" aria-label="Filters kiezen">
-                {['gezondheid', 'betaalbaarheid', 'inclusiviteit', 'emissies', 'eerlijke keten', 'biodiversiteit'].map(filter => (
+                {['gezondheid', 'betaalbaarheid', 'inclusiviteit', 'verbruik/uitstoot', 'eerlijke keten', 'biodiversiteit'].map(filter => (
                   <button
                     key={filter}
                     role="option"

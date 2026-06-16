@@ -1174,9 +1174,19 @@ select {
   background: #f1f1f1;
   border: 1px solid rgba(116, 116, 116, 0.09);
   border-radius: 17px;
-  height: 104px;
+  min-height: 76px;
   position: relative;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 14px 18px 14px 40px;
+}
+
+.chatbot-panel__intro-text {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #1d2430;
 }
 
 .chatbot-panel__intro-avatar {
