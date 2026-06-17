@@ -1,5 +1,15 @@
 # Patch notes
 
+## v1.3 — 17 juni 2026
+
+### Naar aanleiding van gebruikerstest
+- **Chatbot valt meer op:** vast tekstwolkje ("Hulp nodig?") naast de robot.
+- **Gerecht toevoegen:** het hele kaartje is nu klikbaar om toe te voegen, met een los **ⓘ-knopje** voor meer info.
+- **Onboarding:** thema's zijn nu te ordenen met **op/neer-pijltjes** (naast slepen), met een korte uitleg per thema.
+- **Detailpagina opnieuw ingedeeld:** radar verwijderd (staat al op het dashboard), breder hero-blok met de score en de "Gerecht toevoegen"-knop naast elkaar, en Kosten · Ingrediënten · Alternatieven als drie even hoge kaarten naast elkaar.
+- **Dashboard:** reset-knop "↺ Terug naar radar" en een korte uitleg onder de thema-radar.
+- **Ingrediënten:** herkomst en percentages gecorrigeerd.
+
 ## v1.2 — 16 juni 2026
 
 ### Chatbot

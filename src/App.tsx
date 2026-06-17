@@ -37,6 +37,16 @@ const themes = [
   'eerlijke keten'
 ];
 
+// Korte uitleg per thema, zodat duidelijk is wat elk thema betekent.
+const themeInfo: Record<string, string> = {
+  'gezondheid': 'Voedingswaarde en gezondheid van het gerecht',
+  'biodiversiteit': 'Impact op natuur en soortenrijkdom',
+  'verbruik/uitstoot': 'CO₂-uitstoot en grondstoffenverbruik',
+  'eerlijke keten': 'Eerlijke handel en goede arbeidsomstandigheden',
+  'inclusiviteit': 'Toegankelijk en passend voor iedereen',
+  'betaalbaarheid': 'Prijs en betaalbaarheid van het gerecht',
+};
+
 const loadingAssets = {
   ellipsis: './assets/loading-ellipsis.svg',
   laag1: './assets/loading-layer1.svg',
@@ -240,6 +250,19 @@ export default function App() {
     return () => window.clearTimeout(timeoutId);
   }, [screen]);
 
+  function shiftTheme(theme: string, direction: -1 | 1) {
+    setOrderedThemes((currentThemes) => {
+      const index = currentThemes.indexOf(theme);
+      const target = index + direction;
+      if (index === -1 || target < 0 || target >= currentThemes.length) {
+        return currentThemes;
+      }
+      const nextThemes = [...currentThemes];
+      [nextThemes[index], nextThemes[target]] = [nextThemes[target], nextThemes[index]];
+      return nextThemes;
+    });
+  }
+
   function moveTheme(sourceTheme: string, targetTheme: string) {
     if (sourceTheme === targetTheme) {
       return;
@@ -316,8 +339,8 @@ export default function App() {
 
           <div className="ranking-area">
             <div className="ranking-heading">
-              <p className="ranking-title">Sleep deze 6 thema&apos;s op volgorde van prioriteit</p>
-              <p className="ranking-subtitle">Klik of sleep om de volgorde later aan te passen.</p>
+              <p className="ranking-title">Zet deze 6 thema&apos;s op volgorde van prioriteit</p>
+              <p className="ranking-subtitle">Gebruik de pijltjes ▲▼ of sleep een thema om de volgorde aan te passen.</p>
             </div>
 
             <div className="ranking-grid" role="list" aria-label="Prioriteitsvolgorde thema&apos;s">
@@ -338,12 +361,28 @@ export default function App() {
                   onDragEnd={() => setDraggedTheme(null)}
                 >
                   <div className="rank-chip">{index + 1}</div>
-                  <div className="drag-handle" aria-hidden="true" />
-                  <div className="theme-pill">
-                    <span>{theme}</span>
-                    <span className="theme-pill__grab" aria-hidden="true">
-                      ⋮⋮
+                  <div className="theme-pill" title={themeInfo[theme]}>
+                    <span className="theme-pill__grab" aria-hidden="true">⋮⋮</span>
+                    <span className="theme-pill__text">
+                      <span className="theme-pill__name">{theme}</span>
+                      <span className="theme-pill__desc">{themeInfo[theme]}</span>
                     </span>
+                  </div>
+                  <div className="theme-pill__arrows">
+                    <button
+                      type="button"
+                      className="theme-arrow"
+                      aria-label={`${theme} hoger in de lijst`}
+                      disabled={index === 0}
+                      onClick={() => shiftTheme(theme, -1)}
+                    >▲</button>
+                    <button
+                      type="button"
+                      className="theme-arrow"
+                      aria-label={`${theme} lager in de lijst`}
+                      disabled={index === orderedThemes.length - 1}
+                      onClick={() => shiftTheme(theme, 1)}
+                    >▼</button>
                   </div>
                 </div>
               ))}
@@ -689,10 +728,25 @@ function AddDishModal({ open, onClose, onOpenChat, scenario, addMeal, removeMeal
 
             <div className="add-dish-tall-cards">
               {tallMealCards.map((card) => (
-                <article key={card.name} className={`add-meal-tall-card${inScenario(card.name) ? ' add-meal-tall-card--added' : ''}`} onClick={() => onSelectDish(card)} style={{ cursor: 'pointer' }}>
+                <article
+                  key={card.name}
+                  className={`add-meal-tall-card${inScenario(card.name) ? ' add-meal-tall-card--added' : ''}`}
+                  onClick={() => inScenario(card.name) ? removeMeal(card.name) : addMeal(card.name, card.description, card.image)}
+                  style={{ cursor: 'pointer' }}
+                  role="button"
+                  aria-pressed={inScenario(card.name)}
+                  aria-label={`${card.name} ${inScenario(card.name) ? 'verwijderen uit' : 'toevoegen aan'} scenario`}
+                >
                   <div className="add-meal-tall-card__img-wrap">
                     <img src={card.image} alt={card.name} />
                     {card.badge && <span className="add-meal-tall-card__badge">{card.badge}</span>}
+                    <button
+                      type="button"
+                      className="add-meal-tall-card__info"
+                      aria-label={`Meer info over ${card.name}`}
+                      title="Meer info"
+                      onClick={(e) => { e.stopPropagation(); onSelectDish(card); }}
+                    >i</button>
                   </div>
                   <div className="add-meal-tall-card__body">
                     <h4 className="add-meal-tall-card__name">{card.name}</h4>
@@ -724,7 +778,15 @@ function AddDishModal({ open, onClose, onOpenChat, scenario, addMeal, removeMeal
 
             <div className="add-dish-wide-cards">
               {wideMealCards.map((card) => (
-                <article key={card.name} className="add-meal-wide-card">
+                <article
+                  key={card.name}
+                  className={`add-meal-wide-card${inScenario(card.name) ? ' add-meal-wide-card--added' : ''}`}
+                  onClick={() => inScenario(card.name) ? removeMeal(card.name) : addMeal(card.name, card.description, card.image)}
+                  style={{ cursor: 'pointer' }}
+                  role="button"
+                  aria-pressed={inScenario(card.name)}
+                  aria-label={`${card.name} ${inScenario(card.name) ? 'verwijderen uit' : 'toevoegen aan'} scenario`}
+                >
                   <img src={card.image} alt={card.name} className="add-meal-wide-card__image" />
                   <div className="add-meal-wide-card__body">
                     <h4 className="add-meal-wide-card__name">{card.name}</h4>
@@ -735,7 +797,7 @@ function AddDishModal({ open, onClose, onOpenChat, scenario, addMeal, removeMeal
                     type="button"
                     className="add-meal-wide-card__add"
                     aria-label={inScenario(card.name) ? 'Verwijderen uit scenario' : 'Toevoegen aan scenario'}
-                    onClick={() => inScenario(card.name) ? removeMeal(card.name) : addMeal(card.name, card.description, card.image)}
+                    onClick={(e) => { e.stopPropagation(); inScenario(card.name) ? removeMeal(card.name) : addMeal(card.name, card.description, card.image); }}
                   >
                     {inScenario(card.name) ? '✓' : '+'}
                   </button>
@@ -896,25 +958,27 @@ function DetailModal({ open, dish, onClose, inScenario, addMeal, removeMeal, onO
       </div>
 
       <div className="detail-body">
-        {/* Left column: image+info + two bottom cards */}
-        <div className="detail-left-content">
-          <div className="detail-top">
-            <div className="detail-dish-image">
-              <img src={dish.image} alt={dish.name} />
+        {/* Hero: afbeelding + kerninfo over volle breedte */}
+        <div className="detail-hero">
+          <div className="detail-dish-image">
+            <img src={dish.image} alt={dish.name} />
+          </div>
+          <div className="detail-info">
+            <h1 className="detail-name">{dish.name}</h1>
+            <div className="detail-tags">
+              <span className="detail-tag detail-tag--green">Vegan</span>
+              <span className="detail-tag detail-tag--blue">Lokaal</span>
+              <span className="detail-tag detail-tag--orange">Seizoensgebonden</span>
             </div>
-            <div className="detail-info">
-              <h1 className="detail-name">{dish.name}</h1>
-              <div className="detail-tags">
-                <span className="detail-tag detail-tag--green">Vegan</span>
-                <span className="detail-tag detail-tag--blue">Lokaal</span>
-                <span className="detail-tag detail-tag--orange">Seizoensgebonden</span>
-              </div>
-              <p className="detail-description">Frisse salade met seizoensgroenten, kikkererwten, noten en een citroen-tahindressing.</p>
-              <div className="detail-score-divider" />
-              <p className="detail-score-label">Totaal score</p>
-              <div className="detail-score-row">
-                <span className="detail-score__number">90</span>
-                <span className="detail-score__total">/100</span>
+            <p className="detail-description">Frisse salade met seizoensgroenten, kikkererwten, noten en een citroen-tahindressing.</p>
+            <div className="detail-score-divider" />
+            <div className="detail-score-action">
+              <div className="detail-score-block">
+                <p className="detail-score-label">Totaal score</p>
+                <div className="detail-score-row">
+                  <span className="detail-score__number">90</span>
+                  <span className="detail-score__total">/100</span>
+                </div>
               </div>
               <button
                 type="button"
@@ -925,54 +989,63 @@ function DetailModal({ open, dish, onClose, inScenario, addMeal, removeMeal, onO
               </button>
             </div>
           </div>
-
-          <div className="detail-bottom-cards">
-            <div className="detail-card detail-impact">
-              <h2 className="detail-card-title">
-                Impact op de 6 factoren
-                <img src={detailAssets.infoIcon} alt="" className="detail-card-title__icon" />
-              </h2>
-              <RadarChart
-                blueScores={[90, 85, 75, 80, 82, 88]}
-                orangeScores={[77, 78, 70, 72, 75, 80]}
-                compact
-              />
-            </div>
-
-            <div className="detail-card detail-costs">
-              <h2 className="detail-card-title">
-                Kosten &amp; uitstoot per portie
-                <img src={detailAssets.infoIcon} alt="" className="detail-card-title__icon" />
-              </h2>
-              <div className="detail-costs-table">
-                <div className="detail-costs-row"><span>Inkoopprijs</span><span>€2,90</span></div>
-                <div className="detail-costs-row"><span>Verkoopprijs</span><span>€4,20</span></div>
-                <div className="detail-costs-row detail-costs-row--divider" />
-                <div className="detail-costs-row"><span>Marge</span><span className="detail-costs-row__marge">€1,30</span></div>
-              </div>
-              <div className="detail-co2-block">
-                <div className="detail-co2-block__header">
-                  <span>CO₂-uitstoot</span>
-                  <span className="detail-co2-block__low">25% lager dan gemiddeld</span>
-                </div>
-                <p className="detail-co2-block__value">0,18 kg</p>
-              </div>
-              <p className="detail-co2-chart-label"><strong>CO₂-uitstoot vergelijking </strong><span>(kg per portie)</span></p>
-              <div className="detail-co2-bar-wrap">
-                <div className="detail-co2-gradient-bar" />
-                <img src={detailAssets.co2Dot} alt="" className="detail-co2-bar__dot" />
-              </div>
-              <div className="detail-co2-bar-legend">
-                <div><span>0.10</span><br /><small>Laagste</small></div>
-                <div><span>0.25</span><br /><small>Gemiddeld</small></div>
-                <div><span>0.60</span><br /><small>Hoogste</small></div>
-              </div>
-            </div>
-          </div>
         </div>
 
-        {/* Right column: alternatieven + ingrediënten stacked */}
-        <div className="detail-right-content">
+        {/* Drie kaarten naast elkaar: ingrediënten · kosten · alternatieven */}
+        <div className="detail-cards-row">
+          <div className="detail-card detail-ingredients">
+            <h2 className="detail-card-title">
+              Ingrediënten &amp; herkomst
+              <img src={detailAssets.infoIcon} alt="" className="detail-card-title__icon" />
+            </h2>
+            <div className="detail-ingredients-list">
+              {[
+                { name: 'Gemengde sla',             origin: 'Nederland', pct: '30%' },
+                { name: 'Komkommer',                origin: 'Nederland', pct: '15%' },
+                { name: 'Cherrytomaten',            origin: 'Nederland', pct: '15%' },
+                { name: 'Kikkererwten',             origin: 'Italië',    pct: '20%' },
+                { name: 'Notenmix',                 origin: 'Europa',    pct: '12%' },
+                { name: 'Dressing (citroen tahin)', origin: 'Turkije',   pct: '8%'  },
+              ].map((ing) => (
+                <div key={ing.name} className="detail-ingredients-row">
+                  <span className="detail-ingredients-row__name">{ing.name}</span>
+                  <span className="detail-ingredients-row__origin">{ing.origin}</span>
+                  <span className="detail-ingredients-row__pct">{ing.pct}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="detail-card detail-costs">
+            <h2 className="detail-card-title">
+              Kosten &amp; uitstoot per portie
+              <img src={detailAssets.infoIcon} alt="" className="detail-card-title__icon" />
+            </h2>
+            <div className="detail-costs-table">
+              <div className="detail-costs-row"><span>Inkoopprijs</span><span>€2,90</span></div>
+              <div className="detail-costs-row"><span>Verkoopprijs</span><span>€4,20</span></div>
+              <div className="detail-costs-row detail-costs-row--divider" />
+              <div className="detail-costs-row"><span>Marge</span><span className="detail-costs-row__marge">€1,30</span></div>
+            </div>
+            <div className="detail-co2-block">
+              <div className="detail-co2-block__header">
+                <span>CO₂-uitstoot</span>
+                <span className="detail-co2-block__low">25% lager dan gemiddeld</span>
+              </div>
+              <p className="detail-co2-block__value">0,18 kg</p>
+            </div>
+            <p className="detail-co2-chart-label"><strong>CO₂-uitstoot vergelijking </strong><span>(kg per portie)</span></p>
+            <div className="detail-co2-bar-wrap">
+              <div className="detail-co2-gradient-bar" />
+              <img src={detailAssets.co2Dot} alt="" className="detail-co2-bar__dot" />
+            </div>
+            <div className="detail-co2-bar-legend">
+              <div><span>0.10</span><br /><small>Laagste</small></div>
+              <div><span>0.25</span><br /><small>Gemiddeld</small></div>
+              <div><span>0.60</span><br /><small>Hoogste</small></div>
+            </div>
+          </div>
+
           <div className="detail-card detail-alternatives">
             <h2 className="detail-card-title">
               <img src={detailAssets.infoIcon} alt="" className="detail-card-title__icon" />
@@ -1000,33 +1073,6 @@ function DetailModal({ open, dish, onClose, inScenario, addMeal, removeMeal, onO
               score2="90 /100" score2Label="Zeer hoog"
             />
             <button type="button" className="detail-compare-btn">Vergelijk met alternatief</button>
-          </div>
-
-          <div className="detail-card detail-ingredients">
-            <h2 className="detail-card-title">
-              Ingrediënten &amp; herkomst
-              <img src={detailAssets.infoIcon} alt="" className="detail-card-title__icon" />
-            </h2>
-            <div className="detail-ingredients-list">
-              {[
-                { name: 'Gemengde sla',             origin: 'Nederland', pct: '30%' },
-                { name: 'Komkommer',                origin: 'Nederland', pct: '10%' },
-                { name: 'Cherrytomaten',            origin: 'Nederland', pct: '' },
-                { name: 'Kikkererwten',             origin: 'Europa',    pct: '' },
-                { name: 'Notenmix',                 origin: 'Europa',    pct: '' },
-                { name: 'Dressing (citroen tahin)', origin: 'Balesh',    pct: '' },
-              ].map((ing) => (
-                <div key={ing.name} className="detail-ingredients-row">
-                  <span className="detail-ingredients-row__name">{ing.name}</span>
-                  <span className="detail-ingredients-row__origin">{ing.origin}</span>
-                  <span className="detail-ingredients-row__pct">{ing.pct}</span>
-                </div>
-              ))}
-            </div>
-            <button type="button" className="detail-ingredients-more">
-              Bekijk alle ingrediënten
-              <img src={detailAssets.arrowRight} alt="" />
-            </button>
           </div>
         </div>
       </div>
@@ -1179,7 +1225,17 @@ function DashboardScreen() {
               <span className="legend-pill legend-pill--blue">{selectedMeal.name}</span>
               <span className="legend-pill legend-pill--orange">{comparedMeal.name}</span>
             </div>
-            <span className="dashboard-scale-label">Schaal 0 - 100</span>
+            {activeFilter ? (
+              <button
+                type="button"
+                className="dashboard-reset-radar"
+                onClick={() => setActiveFilter(null)}
+              >
+                ↺ Terug naar radar
+              </button>
+            ) : (
+              <span className="dashboard-scale-label">Schaal 0 - 100</span>
+            )}
           </div>
 
           <div className="dashboard-radar" aria-label="Thema radar grafiek">
@@ -1194,6 +1250,11 @@ function DashboardScreen() {
               <RadarChart blueScores={selectedMeal.scores} orangeScores={comparedMeal.scores} />
             )}
           </div>
+          {!activeFilter && (
+            <p className="dashboard-radar__hint">
+              Hoe verder van het midden, hoe hoger de score (0–100) op dat thema.
+            </p>
+          )}
         </article>
 
         <aside className="dashboard-sidebar">

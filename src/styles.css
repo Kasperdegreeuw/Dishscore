@@ -266,7 +266,7 @@ select {
 
 .ranking-row {
   display: grid;
-  grid-template-columns: 48px 40px minmax(0, 1fr);
+  grid-template-columns: 40px minmax(0, 1fr) auto;
   gap: 12px;
   align-items: center;
 }
@@ -298,12 +298,12 @@ select {
 
 .theme-pill {
   min-height: 28px;
-  padding: 6px 14px;
-  border-radius: 999px;
+  padding: 8px 14px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 14px;
+  justify-content: flex-start;
+  gap: 12px;
   font-size: clamp(1rem, 1.2vw, 1.25rem);
   cursor: grab;
   user-select: none;
@@ -311,6 +311,57 @@ select {
     transform 140ms ease,
     box-shadow 140ms ease,
     background 140ms ease;
+}
+
+.theme-pill__text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.theme-pill__name {
+  font-size: clamp(0.95rem, 1.1vw, 1.15rem);
+  line-height: 1.2;
+}
+
+.theme-pill__desc {
+  font-size: 0.72rem;
+  line-height: 1.3;
+  color: #6f7785;
+  font-weight: 400;
+}
+
+.theme-pill__arrows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.theme-arrow {
+  width: 30px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #c3ccd9;
+  background: #fff;
+  border-radius: 7px;
+  color: #1a3e73;
+  font-size: 10px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.13s ease, border-color 0.13s ease;
+}
+
+.theme-arrow:hover:not(:disabled) {
+  background: #eef3fb;
+  border-color: #5086d6;
+}
+
+.theme-arrow:disabled {
+  opacity: 0.32;
+  cursor: default;
 }
 
 .theme-pill:active {
@@ -487,7 +538,7 @@ select {
   }
 
   .ranking-row {
-    grid-template-columns: 42px 32px minmax(0, 1fr);
+    grid-template-columns: 36px minmax(0, 1fr) auto;
     gap: 10px;
   }
 
@@ -810,6 +861,34 @@ select {
   margin-top: 8px;
 }
 
+.dashboard-reset-radar {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #5086d6;
+  background: #eef3fb;
+  color: #1a3e73;
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 5px 11px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.14s ease;
+}
+
+.dashboard-reset-radar:hover {
+  background: #dce8fa;
+}
+
+.dashboard-radar__hint {
+  margin: 6px 0 0;
+  text-align: center;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  color: #6f7785;
+}
+
 .dashboard-sidebar {
   position: absolute;
   left: 1034px;
@@ -1029,6 +1108,36 @@ select {
   width: 100%;
   height: 100%;
   display: block;
+}
+
+/* Klein tekstwolkje naast de chatbot (altijd zichtbaar) */
+.chatbot-trigger::after,
+.add-dish-chatbot-btn::after {
+  content: 'Hulp nodig?';
+  position: absolute;
+  right: calc(100% - 8px);
+  top: 16%;
+  background: #fff;
+  color: #1a3e73;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 12px;
+  border: 1px solid #dbe4f1;
+  border-radius: 14px 14px 4px 14px;
+  white-space: nowrap;
+  box-shadow: 0 3px 10px rgba(26, 62, 115, 0.18);
+  pointer-events: none;
+  animation: chatbot-bubble-in 0.35s ease both;
+}
+
+@keyframes chatbot-bubble-in {
+  from { opacity: 0; transform: translateY(4px) scale(0.94); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chatbot-trigger::after,
+  .add-dish-chatbot-btn::after { animation: none; }
 }
 
 /* ── Chatbot panel ─────────────────────────────────────── */
@@ -1713,6 +1822,53 @@ select {
   align-items: center;
 }
 
+/* ⓘ-knop voor meer info (los van toevoegen) */
+.add-meal-tall-card__info {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.95);
+  color: #1a3e73;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.22);
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.add-meal-tall-card__info:hover {
+  background: #fff;
+  transform: scale(1.12);
+}
+
+/* Klikbare kaartjes: hover-feedback + duidelijke 'toegevoegd'-staat */
+.add-meal-tall-card,
+.add-meal-wide-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.add-meal-tall-card:hover,
+.add-meal-wide-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(26, 62, 115, 0.16);
+}
+
+.add-meal-tall-card--added,
+.add-meal-wide-card--added {
+  border-color: #157a33;
+  box-shadow: 0 0 0 1px #157a33;
+}
+
 .add-meal-tall-card__body {
   flex: 1;
   padding: 6px 8px 8px;
@@ -2339,13 +2495,43 @@ select {
 /* 2-column grid: left (image+info+2 cards) | right (alternatieven+ingrediënten) */
 .detail-body {
   padding: 20px 68px 80px 108px;
-  display: grid;
-  grid-template-columns: 1fr 364px;
-  column-gap: 86px;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
   max-width: 1440px;
   margin: 0 auto;
   box-sizing: border-box;
+}
+
+/* Hero: afbeelding links, kerninfo over de volle breedte rechts */
+.detail-hero {
+  display: grid;
+  grid-template-columns: 358px 1fr;
+  column-gap: 44px;
+  align-items: start;
+}
+
+/* Drie even hoge kaarten naast elkaar (boven én onder uitgelijnd).
+   Volgorde: Kosten (links) · Ingrediënten (midden) · Alternatieven (rechts) */
+.detail-cards-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+  align-items: stretch;
+}
+
+.detail-cards-row .detail-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-cards-row .detail-costs { order: 1; }
+.detail-cards-row .detail-ingredients { order: 2; }
+.detail-cards-row .detail-alternatives { order: 3; }
+
+/* Ingrediënten: titel + rijen bovenaan, gelijkmatige regelafstand */
+.detail-cards-row .detail-ingredients {
+  justify-content: flex-start;
 }
 
 /* Left column: stacks detail-top + detail-bottom-cards */
@@ -2429,11 +2615,11 @@ select {
 .detail-tag--orange { background: rgba(255,209,100,0.43); border-color: #938125; color: #6b5a00; }
 
 .detail-description {
-  font-size: 13px;
+  font-size: 13.5px;
   color: #333;
   margin: 0;
   line-height: 1.5;
-  max-width: 360px;
+  max-width: 620px;
 }
 
 .detail-score-divider {
@@ -2457,16 +2643,29 @@ select {
 }
 
 .detail-score__number {
-  font-size: 32px;
-  font-weight: 700;
-  color: #32ad44;
+  font-size: 46px;
+  font-weight: 800;
+  color: #157a33;
   line-height: 1;
 }
 
 .detail-score__total {
-  font-size: 20px;
+  font-size: 22px;
   color: #1a3e73;
   font-weight: 400;
+}
+
+/* Score + knop naast elkaar */
+.detail-score-action {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+
+.detail-score-block {
+  display: flex;
+  flex-direction: column;
 }
 
 .detail-add-btn {
@@ -2474,13 +2673,12 @@ select {
   color: white;
   border: none;
   border-radius: 11px;
-  padding: 0 20px;
-  height: 42px;
+  padding: 0 24px;
+  height: 46px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  width: 100%;
-  max-width: 304px;
+  white-space: nowrap;
   transition: background 0.15s;
 }
 
@@ -2518,7 +2716,6 @@ select {
   flex-direction: column;
   gap: 10px;
   border-color: #cfcfcf;
-  margin-top: 9px;
 }
 
 .detail-alternatives .detail-card-title {
@@ -2707,8 +2904,21 @@ select {
   display: block;
 }
 
+.detail-radar-hint {
+  margin: 8px 0 0;
+  text-align: center;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: #6f7785;
+}
+
 /* ── Kosten kaart ── */
 .detail-costs { border-color: #dedede; }
+
+/* Kosten-kaart de beschikbare hoogte laten benutten */
+.detail-cards-row .detail-costs {
+  justify-content: space-between;
+}
 
 .detail-costs-table {
   display: flex;
@@ -2812,8 +3022,7 @@ select {
 /* ── Ingrediënten kaart ── */
 .detail-ingredients {
   border-color: #dadada;
-  margin-top: auto;
-  padding: 10px;
+  padding: 20px;
 }
 
 .detail-ingredients .detail-card-title {
@@ -2830,10 +3039,14 @@ select {
   display: grid;
   grid-template-columns: 1fr auto auto;
   gap: 8px;
-  font-size: 12px;
+  font-size: 13px;
   color: #333;
-  padding: 3px 0;
-  border-bottom: 1px solid #f0f4f9;
+  padding: 11px 0;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.detail-ingredients-row:last-child {
+  border-bottom: none;
 }
 
 .detail-ingredients-row__origin {
