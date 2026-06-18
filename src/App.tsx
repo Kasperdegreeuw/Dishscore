@@ -518,7 +518,7 @@ function RadarChart({ blueScores, orangeScores, compact }: { blueScores: number[
   );
 }
 
-function ChatbotPanel({ open, onClose, selectedMeal }: { open: boolean; onClose: () => void; selectedMeal: string }) {
+function ChatbotPanel({ open, onClose, selectedMeal, week }: { open: boolean; onClose: () => void; selectedMeal: string; week: number }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -585,7 +585,7 @@ function ChatbotPanel({ open, onClose, selectedMeal }: { open: boolean; onClose:
 
         <div className="chatbot-panel__divider" />
 
-        <div className="chatbot-panel__context">{selectedMeal} · Week 22</div>
+        <div className="chatbot-panel__context">{selectedMeal} · Week {week}</div>
 
         <div className="chatbot-panel__messages" ref={scrollRef}>
           {!hasConversation && (
@@ -677,9 +677,14 @@ function AddDishModal({ open, onClose, onOpenChat, scenario, addMeal, removeMeal
   // Alleen op breedte schalen zodat de tekst leesbaar groot blijft; is de modal
   // hoger dan het scherm, dan scrollt de overlay (zie .add-dish-overlay).
   const canvasZoom = useFitZoom(1293);
+  const [activeChips, setActiveChips] = useState<string[]>(['Past bij mijn profiel']);
+  const [sortValue, setSortValue] = useState('Aanbevolen');
+  const [sortOpen, setSortOpen] = useState(false);
   if (!open) return null;
 
   const inScenario = (name: string) => scenario.some(s => s.name === name);
+  const toggleChip = (f: string) =>
+    setActiveChips((cur) => (cur.includes(f) ? cur.filter((c) => c !== f) : [...cur, f]));
 
   return (
     <div className="add-dish-overlay">
@@ -702,19 +707,55 @@ function AddDishModal({ open, onClose, onOpenChat, scenario, addMeal, removeMeal
                 <img src={addDishAssets.searchIcon} alt="" />
                 <input type="text" placeholder="Zoek op naam, ingredient of label" />
               </div>
-              <button type="button" className="add-dish-wissen">Wissen</button>
-              <div className="add-dish-sort">
-                <span className="add-dish-sort__label">Sorteren op</span>
-                <span className="add-dish-sort__value">Aanbevolen</span>
-                <span className="add-dish-sort__caret">›</span>
+              <button type="button" className="add-dish-wissen" onClick={() => setActiveChips([])}>Wissen</button>
+              <div className="add-dish-sort-wrap">
+                <button
+                  type="button"
+                  className="add-dish-sort"
+                  aria-expanded={sortOpen}
+                  onClick={() => setSortOpen((o) => !o)}
+                >
+                  <span className="add-dish-sort__label">Sorteren op</span>
+                  <span className="add-dish-sort__value">{sortValue}</span>
+                  <span className={`add-dish-sort__caret${sortOpen ? ' add-dish-sort__caret--open' : ''}`}>›</span>
+                </button>
+                {sortOpen && (
+                  <div className="add-dish-sort-menu" role="listbox" aria-label="Sorteren op">
+                    {['Aanbevolen', 'Prijs', 'Score'].map((opt) => (
+                      <button
+                        key={opt}
+                        type="button"
+                        role="option"
+                        aria-selected={sortValue === opt}
+                        className={`add-dish-sort-menu__item${sortValue === opt ? ' add-dish-sort-menu__item--selected' : ''}`}
+                        onClick={() => { setSortValue(opt); setSortOpen(false); }}
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
             <h3 className="add-dish-filters-title">Filters</h3>
             <div className="add-dish-filter-chips">
-              <button type="button" className="add-dish-chip add-dish-chip--active">Past bij mijn profiel</button>
+              <button
+                type="button"
+                className={`add-dish-chip${activeChips.includes('Past bij mijn profiel') ? ' add-dish-chip--active' : ''}`}
+                aria-pressed={activeChips.includes('Past bij mijn profiel')}
+                onClick={() => toggleChip('Past bij mijn profiel')}
+              >
+                Past bij mijn profiel
+              </button>
               {['Gezondheid', 'Betaalbaarheid', 'Inclusiviteit', 'Biodiversiteit', 'Verbruik/uitstoot', 'Eerlijke keten'].map((f) => (
-                <button key={f} type="button" className="add-dish-chip">
+                <button
+                  key={f}
+                  type="button"
+                  className={`add-dish-chip${activeChips.includes(f) ? ' add-dish-chip--active' : ''}`}
+                  aria-pressed={activeChips.includes(f)}
+                  onClick={() => toggleChip(f)}
+                >
                   <img src={addDishAssets.filterIcon} alt="" />
                   {f}
                 </button>
@@ -1096,6 +1137,7 @@ function DashboardScreen() {
   const [scenario, setScenario] = useState<ScenarioItem[]>(initialScenario);
   const [weekDropdownOpen, setWeekDropdownOpen] = useState(false);
   const [selectedWeek, setSelectedWeek] = useState(22);
+  const [saved, setSaved] = useState(false);
   const weekDropdownRef = useRef<HTMLDivElement>(null);
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
@@ -1206,8 +1248,12 @@ function DashboardScreen() {
               </div>
             )}
           </div>
-          <button className="chip chip--solid" type="button">
-            Opslaan
+          <button
+            className={`chip chip--solid${saved ? ' chip--saved' : ''}`}
+            type="button"
+            onClick={() => { setSaved(true); window.setTimeout(() => setSaved(false), 2000); }}
+          >
+            {saved ? '✓ Opgeslagen' : 'Opslaan'}
           </button>
         </div>
 
@@ -1347,7 +1393,7 @@ function DashboardScreen() {
         onOpenChat={() => setChatOpen(true)}
       />
 
-      <ChatbotPanel open={chatOpen} onClose={() => setChatOpen(false)} selectedMeal={selectedMeal.name} />
+      <ChatbotPanel open={chatOpen} onClose={() => setChatOpen(false)} selectedMeal={selectedMeal.name} week={selectedWeek} />
     </main>
   );
 }

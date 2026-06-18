@@ -698,6 +698,12 @@ select {
   border-color: #1a3e73;
   min-width: 90px;
   justify-content: center;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.chip--solid.chip--saved {
+  background: #157a33;
+  border-color: #157a33;
 }
 
 .chip__icon,
@@ -1138,6 +1144,19 @@ select {
 @media (prefers-reduced-motion: reduce) {
   .chatbot-trigger::after,
   .add-dish-chatbot-btn::after { animation: none; }
+}
+
+/* In de 'Gerecht toevoegen'-popup botst het wolkje met de knoppen,
+   dus daar alleen bij hover tonen. De fade-in-animatie moet hier uit,
+   anders houdt die (fill-mode: both) opacity op 1. */
+.add-dish-chatbot-btn::after {
+  animation: none;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+.add-dish-chatbot-btn:hover::after {
+  opacity: 1;
 }
 
 /* ── Chatbot panel ─────────────────────────────────────── */
@@ -1684,8 +1703,12 @@ select {
   font-family: inherit;
 }
 
-.add-dish-sort {
+.add-dish-sort-wrap {
   margin-left: auto;
+  position: relative;
+}
+
+.add-dish-sort {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -1693,6 +1716,67 @@ select {
   padding: 0 10px;
   border: 1px solid #a6a6a6;
   border-radius: 9px;
+  background: #fff;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.add-dish-sort:hover {
+  border-color: #1a3e73;
+}
+
+.add-dish-sort__caret {
+  transition: transform 0.15s ease;
+}
+
+.add-dish-sort__caret--open {
+  transform: rotate(90deg);
+}
+
+.add-dish-sort-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 140px;
+  background: #fff;
+  border: 1px solid #d8dde6;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(26, 62, 115, 0.14);
+  padding: 4px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+}
+
+.add-dish-sort-menu__item {
+  display: flex;
+  align-items: center;
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: 7px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  color: #1a3e73;
+  cursor: pointer;
+}
+
+.add-dish-sort-menu__item:hover {
+  background: #f1f3f7;
+}
+
+.add-dish-sort-menu__item--selected,
+.add-dish-sort-menu__item--selected:hover {
+  background: #dce8fa;
+  font-weight: 600;
+}
+
+.add-dish-sort-menu__item--selected::after {
+  content: '✓';
+  margin-left: auto;
+  padding-left: 12px;
+  font-weight: 700;
 }
 
 .add-dish-sort__label {

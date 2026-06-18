@@ -1,5 +1,13 @@
 # Patch notes
 
+## v1.4 — 18 juni 2026
+
+### Interactie & feedback
+- **Opslaan-knop** geeft nu een korte bevestiging ("✓ Opgeslagen").
+- **Chatbot** toont nu de gekozen week (loopt mee met het week-filter).
+- **Gerecht toevoegen:** filter-chips togglen nu zichtbaar aan/uit, "Wissen" zet ze uit, en "Sorteren op" is een werkend dropdownnetje (Aanbevolen / Prijs / Score) met een duidelijke selectie-markering.
+- **Chatbot-wolkje** "Hulp nodig?" verschijnt in de "Gerecht toevoegen"-popup alleen bij hover, zodat het niet meer over de knoppen valt.
+
 ## v1.3 — 17 juni 2026
 
 ### Naar aanleiding van gebruikerstest
